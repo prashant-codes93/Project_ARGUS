@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="icons/argus_logo.jpeg" style="height: fit-content;">
+<title>Argus — Security Operations Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<link rel="stylesheet" href="css/argus_dashboard.css">
+</head>
+<body>
+
+<div class="shell">
+  <aside class="side">
+    <div class="side-brand">
+      <img src="icons/argus_logo.jpeg">
+      <!-- <div class="word">Argus</div> -->
+    </div>
+
+    <div class="side-group">Security</div>
+    <nav class="side-nav" id="nav">
+      <a href="#" class="on" data-p="Dashboard"><span class="ic">◉</span>Dashboard</a>
+      <a href="#" data-p="Events"><span class="ic">▣</span>Events</a>
+      <a href="#" data-p="Alerts"><span class="ic">⚠</span>Alerts</a>
+      <a href="#" data-p="Threat Detection"><span class="ic">⌁</span>Threat Detection</a>
+      <a href="#" data-p="Investigations"><span class="ic">⌕</span>Investigations</a>
+      <a href="#" data-p="Risk Scoring"><span class="ic">◈</span>Risk Scoring</a>
+      <a href="#" data-p="Assets"><span class="ic">▤</span>Assets</a>
+      <a href="#" data-p="Reports"><span class="ic">▥</span>Reports</a>
+    </nav>
+
+    <div class="side-group">System</div>
+    <nav class="side-nav">
+      <a href="#" data-p="AI Assistant"><span class="ic">✧</span>AI Assistant</a>
+      <a href="#" data-p="Settings"><span class="ic">⚙</span>Settings</a>
+    </nav>
+
+    <div class="side-foot">
+      <div class="who-mark">RK</div>
+      <div class="who">
+        <div>Rohan Kumar</div>
+        <div>ADMIN</div>
+      </div>
+      <a class="side-signout mono" id="signOut" href="https://claude.ai/artifact/3rDssTxFwz2hqNgTd5nvwQ">exit</a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1>Security Overview</h1>
+        <p class="sub">What Argus has seen across your environment in the last 24 hours</p>
+      </div>
+      <div class="top-actions">
+        <label class="search">
+          <span>⌕</span>
+          <input id="q" type="text" placeholder="Search events, IPs, IOCs…">
+        </label>
+        <button class="pill" id="rangeBtn">Last 24h ▾</button>
+        <button class="ibtn" id="bellBtn">🔔<span class="flag"></span></button>
+        <div class="avatar">RK</div>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <section class="kpis">
+        <div class="card kpi">
+          <div class="kh"><span>Total Events</span><span>24H</span></div>
+          <div class="kv">12,458</div>
+          <div class="kt up">↑ 8.4% vs prior day</div>
+        </div>
+        <div class="card kpi">
+          <div class="kh"><span>Alerts Raised</span><span>24H</span></div>
+          <div class="kv">84</div>
+          <div class="kt up">↑ 11 new</div>
+        </div>
+        <div class="card kpi crit">
+          <div class="kh"><span>Critical</span><span>Open</span></div>
+          <div class="kv">5</div>
+          <div class="kt flat">unchanged</div>
+        </div>
+        <div class="card kpi high">
+          <div class="kh"><span>High</span><span>Open</span></div>
+          <div class="kv">18</div>
+          <div class="kt up">↑ 3 new</div>
+        </div>
+        <div class="card kpi med">
+          <div class="kh"><span>Medium</span><span>Open</span></div>
+          <div class="kv">61</div>
+          <div class="kt down">↓ 6 resolved</div>
+        </div>
+        <div class="card kpi low">
+          <div class="kh"><span>Low</span><span>Open</span></div>
+          <div class="kv">42</div>
+          <div class="kt down">↓ 9 resolved</div>
+        </div>
+      </section>
+
+      <section class="grid2">
+        <div class="card">
+          <div class="card-top"><h2>Events Over Time</h2><span>Per hour</span></div>
+          <div class="cwrap"><canvas id="eventsChart"></canvas></div>
+        </div>
+
+        <div class="card">
+          <div class="card-top"><h2>Alerts by Severity</h2><span>Current window</span></div>
+          <div class="sev">
+            <div class="donut">
+              <canvas id="sevChart"></canvas>
+              <div class="donut-mid">126</div>
+            </div>
+            <div class="legend">
+              <div class="lrow"><div class="lleft"><i class="ldot crit"></i>Critical</div><strong>5</strong></div>
+              <div class="lrow"><div class="lleft"><i class="ldot high"></i>High</div><strong>18</strong></div>
+              <div class="lrow"><div class="lleft"><i class="ldot med"></i>Medium</div><strong>61</strong></div>
+              <div class="lrow"><div class="lleft"><i class="ldot low"></i>Low</div><strong>42</strong></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid2">
+        <div class="card">
+          <div class="card-top"><h2>Recent Alerts</h2><span id="alertCount">5 shown</span></div>
+          <div class="alerts" id="alertList">
+            <div class="alertrow" data-s="port scan 192.168.217.128 high open">
+              <i class="adot" style="background:var(--warn)"></i>
+              <div class="amain"><strong>Port Scan Detected</strong><small>192.168.217.128 · 14:32</small></div>
+              <span class="tag high">HIGH · OPEN</span>
+            </div>
+            <div class="alertrow" data-s="ioc match malicious ip 10.0.0.4 critical open">
+              <i class="adot" style="background:var(--danger)"></i>
+              <div class="amain"><strong>IOC Match — Malicious IP</strong><small>10.0.0.4 · 14:28</small></div>
+              <span class="tag critical">CRITICAL · OPEN</span>
+            </div>
+            <div class="alertrow" data-s="brute force 192.168.217.1 high closed">
+              <i class="adot" style="background:var(--success)"></i>
+              <div class="amain"><strong>Brute Force Attempt</strong><small>192.168.217.1 · 14:21</small></div>
+              <span class="tag closed">HIGH · CLOSED</span>
+            </div>
+            <div class="alertrow" data-s="suspicious outbound traffic example.com medium open">
+              <i class="adot" style="background:var(--amber)"></i>
+              <div class="amain"><strong>Suspicious Outbound Traffic</strong><small>example.com · 13:57</small></div>
+              <span class="tag medium">MEDIUM · OPEN</span>
+            </div>
+            <div class="alertrow" data-s="privilege escalation server-03 medium open">
+              <i class="adot" style="background:var(--amber)"></i>
+              <div class="amain"><strong>Privilege Escalation Signal</strong><small>server-03 · 13:40</small></div>
+              <span class="tag medium">MEDIUM · OPEN</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-top"><h2>Overall Risk</h2><span>Live score</span></div>
+          <div class="riskrow">
+            <div class="ring"><div class="ring-num"><strong>72</strong><small>/ 100</small></div></div>
+            <div class="riskinfo">
+              <h3>High Risk</h3>
+              <p>Driven by a confirmed malicious-IP match plus a sustained brute-force run against 192.168.217.1 in the last hour.</p>
+            </div>
+          </div>
+          <div class="cwrap sm" style="margin-top:15px"><canvas id="riskChart"></canvas></div>
+        </div>
+      </section>
+
+      <section class="grid3">
+        <div class="card">
+          <div class="card-top"><h2>Attack / Threat Types</h2><span>Share of alerts</span></div>
+          <div class="brow"><div class="bmeta"><span>IOC Detection</span><b>32%</b></div><div class="btrack"><div class="bfill" style="width:32%"></div></div></div>
+          <div class="brow"><div class="bmeta"><span>Port Scan</span><b>21%</b></div><div class="btrack"><div class="bfill" style="width:21%"></div></div></div>
+          <div class="brow"><div class="bmeta"><span>Brute Force</span><b>14%</b></div><div class="btrack"><div class="bfill" style="width:14%"></div></div></div>
+          <div class="brow"><div class="bmeta"><span>Suspicious Traffic</span><b>10%</b></div><div class="btrack"><div class="bfill" style="width:10%"></div></div></div>
+          <div class="brow"><div class="bmeta"><span>Other</span><b>7%</b></div><div class="btrack"><div class="bfill" style="width:7%"></div></div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-top"><h2>Top Source IPs</h2><span>By event count</span></div>
+          <table>
+            <thead><tr><th>Source</th><th>Events</th></tr></thead>
+            <tbody>
+              <tr><td class="ink mono">192.168.217.128</td><td class="mono">245</td></tr>
+              <tr><td class="ink mono">192.168.217.1</td><td class="mono">198</td></tr>
+              <tr><td class="ink mono">10.x.x.x range</td><td class="mono">143</td></tr>
+              <tr><td class="ink mono">203.0.113.4</td><td class="mono">61</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <div class="card-top"><h2>IOC / Threat Intel</h2><span>Watchlist</span></div>
+          <table id="iocTable">
+            <thead><tr><th>Type</th><th>Indicator</th><th>Severity</th></tr></thead>
+            <tbody>
+              <tr data-s="ip x.x.x.x malicious critical"><td class="ink">IP</td><td class="mono">x.x.x.x</td><td><span class="tag malicious">MALICIOUS</span></td></tr>
+              <tr data-s="domain example.com suspicious high"><td class="ink">Domain</td><td class="mono">example.com</td><td><span class="tag suspicious">SUSPICIOUS</span></td></tr>
+              <tr data-s="hash abc123 unknown medium"><td class="ink">Hash</td><td class="mono">abc123…</td><td><span class="tag unknown">UNKNOWN</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-top"><h2>✧ Argus AI Assistant</h2><span>Preview</span></div>
+        <div class="askbox" id="askBox">
+          <strong>Suggested analysis</strong>
+          Repeated failed logins from <b>192.168.217.1</b> were followed minutes later by a confirmed IOC match on <b>10.0.0.4</b> — the pattern reads as a brute-force attempt that escalated. Worth reviewing both together before you close either one.
+        </div>
+        <div class="askrow">
+          <button data-ask="explain">Explain this alert</button>
+          <button data-ask="summarize">Summarize recent threats</button>
+          <button data-ask="steps">Investigation steps</button>
+        </div>
+        <div class="askinput">
+          <input id="askInput" type="text" placeholder="Ask about an event, IP, or IOC…">
+          <button id="askBtn">Ask</button>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/argus_dashboard.js"></script>
+</body>
+</html>
