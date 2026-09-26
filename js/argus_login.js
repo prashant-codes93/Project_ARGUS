@@ -16,7 +16,7 @@
   const form = document.getElementById('loginForm');
   const msg = document.getElementById('formMsg');
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const identifier = document.getElementById('identifier').value.trim();
     const password = pwField.value;
@@ -37,15 +37,48 @@
     const original = btn.innerHTML;
     btn.innerHTML = 'Verifying…';
     btn.disabled = true;
-    setTimeout(() => {
-      btn.innerHTML = original;
-      btn.disabled = false;
-      msg.style.borderColor = '#2e5cb8';
-      msg.style.color = '#1f4a9e';
-      msg.style.background = 'rgba(46,92,184,0.07)';
-      msg.innerHTML = 'This is a front-end preview — connect it to the Argus auth API to sign in for real. <a href="https://claude.ai/artifact/8g4hkSowTF3uQDXH9s2sMa" style="color:#1f4a9e; font-weight:600; text-decoration:underline;">Continue to dashboard preview →</a>';
-      msg.classList.add('show');
-    }, 900);
+  try {
+    const response = await fetch('http://localhost:5000/api/auth/login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      email: identifier,
+      password: password
+    })
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || 'Login failed');
+  }
+
+  msg.style.borderColor = '#2e5cb8';
+  msg.style.color = '#1f4a9e';
+  msg.style.background = 'rgba(46,92,184,0.07)';
+  msg.textContent = 'Login successful! Welcome to Argus.';
+msg.classList.add('show');
+
+console.log('Logged in user:', data.user);
+
+setTimeout(() => {
+  window.location.href = 'argus_dashboard.html';
+}, 800);
+
+} 
+catch (error) {
+  msg.style.borderColor = '#c62828';
+  msg.style.color = '#c62828';
+  msg.style.background = 'rgba(198,40,40,0.07)';
+  msg.textContent = error.message;
+  msg.classList.add('show');
+
+} finally {
+  btn.innerHTML = original;
+  btn.disabled = false;
+}
   });
 
   document.getElementById('forgotLink').addEventListener('click', (e) => {

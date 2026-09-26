@@ -215,7 +215,7 @@
   const formMsg = document.getElementById('formMsg');
   const submitBtn = document.getElementById('submitBtn');
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     formMsg.classList.remove('show', 'success');
 
@@ -284,14 +284,49 @@
     submitBtn.disabled = true;
     submitBtn.innerHTML = 'Creating account…';
 
-    setTimeout(() => {
-      document.getElementById('formView').style.display = 'none';
-      document.getElementById('successView').style.display = 'block';
-      document.getElementById('successText').textContent =
-        `Your admin profile for ${fullName.split(' ')[0]} is ready. Sign in to open your dashboard.`;
-    }, 900);
+try {
+  const response = await fetch('http://localhost:5000/api/auth/register', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      name: fullName,
+      username: username,
+      email: email,
+      password: password
+    })
   });
 
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || 'Registration failed');
+  }
+
+  document.getElementById('formView').style.display = 'none';
+  document.getElementById('successView').style.display = 'block';
+
+  document.getElementById('successText').textContent =
+    `Your admin profile for ${fullName.split(' ')[0]} is ready. Sign in to open your dashboard.`;
+
+} catch (error) {
+
+  console.error('Registration error:', error);
+
+  formMsg.textContent = error.message;
+  formMsg.classList.add('show');
+
+  submitBtn.disabled = false;
+  submitBtn.innerHTML = `
+    Register
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 12h14M13 6l6 6-6 6"/>
+    </svg>
+  `;
+}
+  });
   document.getElementById('termsLink').addEventListener('click', (e) => {
     e.preventDefault();
     alert('Wire this up to your Terms & Conditions page.');
