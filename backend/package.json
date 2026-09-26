@@ -1,0 +1,22 @@
+{
+  "name": "argus",
+  "version": "1.0.0",
+  "description": "Argus cybersecurity threat detection and investigation platform",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "prisma skills sync || exit 0"
+  },
+  "dependencies": {
+    "@prisma/client": "^7.10.0",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.4",
+    "express": "^5.2.1",
+    "pg": "^8.23.0",
+    "prisma": "^8.0.0-rc.15"
+  }
+}
