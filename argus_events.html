@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ARGUS · Events</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/argus_events.css">
+</head>
+<body>
+<aside>
+  <div class="logo">
+    <svg width="54" height="46" viewBox="0 0 54 46" fill="none" aria-hidden="true"><path d="M27 3 46 10v11c0 9-8 16-19 20C16 37 8 30 8 21V10z" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"/><path d="M13 22c4-6 9-9 14-9s10 3 14 9c-4 6-9 9-14 9s-10-3-14-9z" stroke="var(--ink)" stroke-width="2.5"/><circle cx="27" cy="22" r="5.5" fill="var(--acc)"/><path d="M40 3h6v6" stroke="var(--acc)" stroke-width="3"/></svg>
+    <b>ARGUS</b>
+  </div>
+  <nav aria-label="Main">
+    <div class="grp">SECURITY</div>
+    <a href="argus_dashboard.html" ><i>◉</i>Dashboard</a>
+    <a href="#" class="on" aria-current="page"><i>▣</i>Events</a>
+    <a href="#"><i>△</i>Alerts</a>
+    <a href="#"><i>~</i>Threat Detection</a>
+    <a href="#"><i>⌕</i>Investigations</a>
+    <a href="#"><i>◆</i>Risk Scoring</a>
+    <a href="#"><i>▤</i>Assets</a>
+    <a href="#"><i>▥</i>Reports</a>
+    <div class="grp">SYSTEM</div>
+    <a href="#"><i>✧</i>AI Assistant</a>
+    <a href="#"><i>⚙</i>Settings</a>
+  </nav>
+  <div class="me"><div class="av">RK</div><div>Rohan Kumar<small>ADMIN</small></div></div>
+</aside>
+
+<main>
+  <header>
+    <div><h1>Events</h1><p>Every event Argus has collected. Select a row for full details.</p></div>
+    <div class="tools">
+      <select id="range" aria-label="Time range"><option>Last 24h</option><option>Last 7d</option><option selected>Last 30d</option></select>
+      <button id="csv">Export CSV</button>
+    </div>
+  </header>
+
+  <section class="stats" id="stats"></section>
+
+  <section class="panel filters">
+    <input id="q" type="search" placeholder="Search events, IPs, users, IOCs..." aria-label="Search events">
+    <select id="fs" aria-label="Severity"><option value="">Severity: All</option><option>critical</option><option>high</option><option>medium</option><option>low</option></select>
+    <select id="ft" aria-label="Type"><option value="">Type: All</option></select>
+    <select id="fst" aria-label="Status"><option value="">Status: All</option><option>open</option><option>investigating</option><option>closed</option></select>
+    <button id="clr">Clear</button>
+  </section>
+
+  <section class="panel">
+    <div class="scroll">
+      <table>
+        <thead><tr>
+          <th><button id="sortT" aria-label="Sort by time">Time <span id="arr">▼</span></button></th>
+          <th>Event</th><th>Type</th><th>Source IP</th><th>Log source</th><th>Severity</th><th>Status</th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div id="none" class="empty" hidden>No events match these filters. Clear the filters to see everything.</div>
+    <div class="foot"><span id="cnt"></span>
+      <div class="pg"><button id="prev">Prev</button><span id="pn"></span><button id="next">Next</button></div>
+    </div>
+  </section>
+</main>
+
+<div id="dr" role="dialog" aria-label="Event details" aria-hidden="true"></div>
+
+<script src="js/argus_events.js"></script>
+</body>
+</html>
