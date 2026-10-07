@@ -1,8 +1,8 @@
-\# Cyber Trace
+\# ARGUS
 
 
 
-Cyber Trace is a cybersecurity platform designed to collect, process, detect, correlate, and analyze security events and provide security insights through a centralized interface.
+ARGUS is a cybersecurity platform designed to collect, process, detect, correlate, and analyze security events and provide security insights through a centralized interface.
 
 
 
@@ -36,7 +36,7 @@ Cyber Trace is a cybersecurity platform designed to collect, process, detect, co
 
 
 
-Cyber Trace consists of:
+ARGUS consists of:
 
 
 
