@@ -8,7 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <link rel="stylesheet" href="css/argus_dashboard.css">
 </head>
 <body>
@@ -39,63 +40,126 @@
     </nav>
 
     <div class="side-foot">
-      <div class="who-mark">RK</div>
-      <div class="who">
-        <div>Rohan Kumar</div>
-        <div>ADMIN</div>
-      </div>
-      <a class="side-signout mono" id="signOut" href="argus_login.html">exit</a>
-    </div>
+  <div class="who-mark" id="userInitials">U</div>
+
+  <div class="who">
+    <div id="displayUsername">User</div>
+    <div id="displayRole">USER</div>
+  </div>
+
+  <a class="side-signout mono" id="signOut" href="argus_login.html">exit</a>
+</div>
   </aside>
 
   <main class="main">
     <header class="topbar">
+      
       <div>
         <h1>Security Overview</h1>
         <p class="sub">What Argus has seen across your environment in the last 24 hours</p>
       </div>
       <div class="top-actions">
+        <label class="upload-btn">
+    <i class="fa-solid fa-upload"></i>
+    <input type="file" id="logFileInput" accept=".json,.log,.txt" hidden>
+    </label>
         <label class="search">
           <span>⌕</span>
           <input id="q" type="text" placeholder="Search events, IPs, IOCs…">
         </label>
+         <button class="pill" id="newScanBtn">
+         🔍 New Scan
+         </button>
+         <div class="pill" id="currentScanDisplay">
+    Scan: 0
+</div>
+<button class="pill" id="scanHistoryBtn">
+    📋 Scan History
+</button>
         <button class="pill" id="rangeBtn">Last 24h ▾</button>
+       
         <button class="ibtn" id="bellBtn">🔔<span class="flag"></span></button>
-        <div class="avatar">RK</div>
+        <div class="avatar" id="topUserInitials">U</div>
       </div>
     </header>
+    <section class="scan-result" id="scanResult" style="display:none;">
+  <div class="scan-header">
+    <div>
+      <h2>🔍 Argus Scan Result</h2>
+      <p id="scanFileName">Log file scanned</p>
+    </div>
+    <span class="scan-status">SCANNED ✓</span>
+  </div>
+
+  <div class="scan-grid">
+    <div>
+      <span>Event Type</span>
+      <strong id="scanEventType">--</strong>
+    </div>
+
+    <div>
+      <span>Source IP</span>
+      <strong id="scanSourceIp">--</strong>
+    </div>
+
+    <div>
+      <span>Event Severity</span>
+      <strong id="scanEventSeverity">--</strong>
+    </div>
+
+    <div>
+      <span>Detection</span>
+      <strong id="scanDetection">--</strong>
+    </div>
+
+    <div>
+      <span>Detection Severity</span>
+      <strong id="scanDetectionSeverity">--</strong>
+    </div>
+
+    <div>
+      <span>Risk Score</span>
+      <strong id="scanRiskScore">--</strong>
+    </div>
+
+    <div>
+      <span>Risk Level</span>
+      <strong id="scanRiskLevel">--</strong>
+    </div>
+  </div>
+</section>
 
     <div class="content">
 
       <section class="kpis">
         <div class="card kpi">
           <div class="kh"><span>Total Events</span><span>24H</span></div>
-          <div class="kv">12,458</div>
+          <div class="kv" id="totalEvents">0</div>
           <div class="kt up">↑ 8.4% vs prior day</div>
         </div>
         <div class="card kpi">
           <div class="kh"><span>Alerts Raised</span><span>24H</span></div>
-          <div class="kv">84</div>
+          <div class="kv" id="alertsRaised">0</div>
           <div class="kt up">↑ 11 new</div>
         </div>
         <div class="card kpi crit">
           <div class="kh"><span>Critical</span><span>Open</span></div>
-          <div class="kv">5</div>
+          <div class="kv" id="criticalCount">0</div>
           <div class="kt flat">unchanged</div>
         </div>
         <div class="card kpi high">
           <div class="kh"><span>High</span><span>Open</span></div>
-          <div class="kv">18</div>
+          <div class="kv" id="highCount">0</div>
           <div class="kt up">↑ 3 new</div>
         </div>
         <div class="card kpi med">
           <div class="kh"><span>Medium</span><span>Open</span></div>
-          <div class="kv">61</div>
+          <div class="kv" id="mediumCount">0</div>
           <div class="kt down">↓ 6 resolved</div>
         </div>
         <div class="card kpi low">
           <div class="kh"><span>Low</span><span>Open</span></div>
-          <div class="kv">42</div>
+          <div class="kv" id="lowCount">0</div>
           <div class="kt down">↓ 9 resolved</div>
         </div>
       </section>
@@ -111,13 +175,13 @@
           <div class="sev">
             <div class="donut">
               <canvas id="sevChart"></canvas>
-              <div class="donut-mid">126</div>
+              <div class="donut-mid" id="severityTotal">0</div>
             </div>
             <div class="legend">
-              <div class="lrow"><div class="lleft"><i class="ldot crit"></i>Critical</div><strong>5</strong></div>
-              <div class="lrow"><div class="lleft"><i class="ldot high"></i>High</div><strong>18</strong></div>
-              <div class="lrow"><div class="lleft"><i class="ldot med"></i>Medium</div><strong>61</strong></div>
-              <div class="lrow"><div class="lleft"><i class="ldot low"></i>Low</div><strong>42</strong></div>
+              <div class="lrow"><div class="lleft"><i class="ldot crit"></i>Critical</div><strong id="severityCritical">0</strong></div>
+              <div class="lrow"><div class="lleft"><i class="ldot high"></i>High</div><strong id="severityHigh">0</strong></div>
+              <div class="lrow"><div class="lleft"><i class="ldot med"></i>Medium</div><strong id="severityMedium">0</strong></div>
+              <div class="lrow"><div class="lleft"><i class="ldot low"></i>Low</div><strong id="severityLow">0</strong></div>
             </div>
           </div>
         </div>
@@ -158,10 +222,13 @@
         <div class="card">
           <div class="card-top"><h2>Overall Risk</h2><span>Live score</span></div>
           <div class="riskrow">
-            <div class="ring"><div class="ring-num"><strong>72</strong><small>/ 100</small></div></div>
+            <div class="ring"><div class="ring-num">
+  <strong id="riskScore">0</strong>
+  <small>/ 100</small>
+</div></div>
             <div class="riskinfo">
-              <h3>High Risk</h3>
-              <p>Driven by a confirmed malicious-IP match plus a sustained brute-force run against 192.168.217.1 in the last hour.</p>
+              <h3 id="riskLevel">Risk</h3>
+              <p id="riskDescription">Loading current risk information...</p>
             </div>
           </div>
           <div class="cwrap sm" style="margin-top:15px"><canvas id="riskChart"></canvas></div>
