@@ -58,3 +58,6 @@ credentials/
 
 # Python environment
 .python-version
+# Local ARGUS security keys
+security/ENCRYPTION_KEY.txt
+security/SECRETE KEY.txt
