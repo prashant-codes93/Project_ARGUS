@@ -43,14 +43,7 @@ def save_incident(
     cur = conn.execute(
         """
         INSERT INTO incidents
-        (
-            user_id,
-            title,
-            event_ids,
-            risk_score,
-            risk_level,
-            created_at
-        )
+        (user_id, title, event_ids, risk_score, risk_level, created_at)
         VALUES (?, ?, ?, ?, ?, ?)
         """,
         (
@@ -59,7 +52,7 @@ def save_incident(
             json.dumps(event_ids),
             score,
             level,
-            datetime.now(timezone.utc).isoformat()
+            datetime.now(timezone.utc).isoformat(),
         ),
     )
 
