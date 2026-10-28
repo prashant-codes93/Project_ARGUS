@@ -1,23 +1,17 @@
 """
-Pipeline orchestration - ties layers 2 through 6 together for one event.
+Argus Detection Pipeline
 
-Flow:
+Connects:
+1. Event normalization
+2. Threat intelligence
+3. Detection rules
+4. Event correlation
+5. Risk scoring
+6. Incident creation
 
-Raw Event
-    ↓
-Normalize Event
-    ↓
-Threat Intelligence / IOC
-    ↓
-Store Event
-    ↓
-Detection Rules
-    ↓
-Correlation
-    ↓
-Risk Scoring
-    ↓
-Incident
+The pipeline also attaches every event to the
+authenticated user's scan so dashboard data
+remains user-specific.
 """
 
 from database.db import Database
@@ -36,33 +30,30 @@ def run_pipeline(
     scan_id: int | None = None,
     user_id: int | None = None,
 ) -> dict:
-    """
-    Process one incoming security event.
 
-    scan_id:
-        Scan session that owns this event.
-
-    user_id:
-        User who owns the scan and event.
-    """
-
-    # =====================================================
+    # ---------------------------------------------------------
     # 1. NORMALIZE EVENT
-    # =====================================================
+    # ---------------------------------------------------------
 
     event = normalize_event(raw_payload)
 
-    # =====================================================
-    # 2. THREAT INTELLIGENCE / IOC CHECK
-    # =====================================================
+
+    # ---------------------------------------------------------
+    # 2. THREAT INTELLIGENCE
+    # ---------------------------------------------------------
 
     ioc_match = check_threat_intel(event)
 
-    # =====================================================
-    # 3. STORE NORMALIZED EVENT
-    # =====================================================
+
+    # ---------------------------------------------------------
+    # 3. DATABASE TRANSACTION
+    # ---------------------------------------------------------
 
     with db.session() as conn:
+
+        # -----------------------------------------------------
+        # Store normalized event
+        # -----------------------------------------------------
 
         cur = conn.execute(
             """
@@ -97,9 +88,10 @@ def run_pipeline(
 
         event_id = cur.lastrowid
 
-        # =================================================
-        # 4. UPDATE SCAN EVENT COUNT
-        # =================================================
+
+        # -----------------------------------------------------
+        # Update scan event count
+        # -----------------------------------------------------
 
         if scan_id is not None:
 
@@ -108,17 +100,14 @@ def run_pipeline(
                 UPDATE scan_sessions
                 SET total_events = total_events + 1
                 WHERE id = ?
-                  AND user_id = ?
                 """,
-                (
-                    scan_id,
-                    user_id,
-                ),
+                (scan_id,),
             )
 
-        # =================================================
-        # 5. RUN DETECTION RULES
-        # =================================================
+
+        # -----------------------------------------------------
+        # 4. RUN DETECTION RULES
+        # -----------------------------------------------------
 
         triggered_rules = run_detections(
             conn,
@@ -126,9 +115,29 @@ def run_pipeline(
             ioc_match,
         )
 
-        # =================================================
-        # 6. CORRELATE
-        # =================================================
+
+        # -----------------------------------------------------
+        # Update scan threat count
+        # -----------------------------------------------------
+
+        if (
+            scan_id is not None
+            and triggered_rules
+        ):
+
+            conn.execute(
+                """
+                UPDATE scan_sessions
+                SET threats_found = threats_found + 1
+                WHERE id = ?
+                """,
+                (scan_id,),
+            )
+
+
+        # -----------------------------------------------------
+        # 5. CORRELATE EVENT
+        # -----------------------------------------------------
 
         incident = correlate(
             conn,
@@ -137,70 +146,49 @@ def run_pipeline(
             triggered_rules,
         )
 
-        # =================================================
-        # 7. NO INCIDENT
-        # =================================================
 
-        if not incident:
+        # -----------------------------------------------------
+        # 6. CREATE INCIDENT
+        # -----------------------------------------------------
 
-            return {
-                "event_id": event_id,
-                "alerts": triggered_rules,
-                "incident_created": False,
-                "risk_score": 0,
-                "risk_level": "low",
-            }
+        if incident:
 
-        # =================================================
-        # 8. RISK SCORE
-        # =================================================
-
-        score, level = score_incident(
-            triggered_rules,
-            len(incident["event_ids"]),
-        )
-
-        # =================================================
-        # 9. SAVE INCIDENT
-        # =================================================
-
-        incident_id = save_incident(
-            conn,
-            user_id,
-            incident["rules"],
-            incident["event_ids"],
-            score,
-            level,
-        )
-
-        # =================================================
-        # 10. UPDATE THREAT COUNT
-        # =================================================
-
-        if scan_id is not None:
-
-            conn.execute(
-                """
-                UPDATE scan_sessions
-                SET threats_found = threats_found + 1
-                WHERE id = ?
-                  AND user_id = ?
-                """,
-                (
-                    scan_id,
-                    user_id,
+            score, level = score_incident(
+                triggered_rules,
+                len(
+                    incident["event_ids"]
                 ),
             )
 
-        # =================================================
-        # 11. RETURN RESULT
-        # =================================================
+
+            incident_id = save_incident(
+                conn,
+                user_id,
+                incident["rules"],
+                incident["event_ids"],
+                score,
+                level,
+            )
+
+
+            return {
+                "event_id": event_id,
+                "incident_id": incident_id,
+                "alerts": triggered_rules,
+                "incident_created": True,
+                "risk_score": score,
+                "risk_level": level,
+            }
+
+
+        # -----------------------------------------------------
+        # No incident
+        # -----------------------------------------------------
 
         return {
             "event_id": event_id,
-            "incident_id": incident_id,
             "alerts": triggered_rules,
-            "incident_created": True,
-            "risk_score": score,
-            "risk_level": level,
+            "incident_created": False,
+            "risk_score": 0,
+            "risk_level": "low",
         }

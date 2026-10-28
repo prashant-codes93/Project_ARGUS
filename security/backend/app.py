@@ -76,11 +76,11 @@ app.config["SECRET_KEY"] = Config.SECRET_KEY
 #
 # Frontend:
 #   http://127.0.0.1:5500
+#   http://localhost:5500
 #
 # Backend:
 #   http://127.0.0.1:5000
 #
-# This allows the frontend to communicate with Flask.
 # =========================================================
 
 CORS(
@@ -127,6 +127,7 @@ def get_current_user_id():
 
 @app.route("/api/health", methods=["GET"])
 def health():
+
     return jsonify({
         "app": Config.APP_NAME,
         "env": Config.APP_ENV,
@@ -135,17 +136,17 @@ def health():
 
 
 # =========================================================
-# REGISTER
+# USER REGISTRATION
 # =========================================================
 
 @app.route("/api/auth/register", methods=["POST"])
 def register():
     """
-    Register a new Argus user.
+    Public registration.
 
-    Every normal registered user is an analyst.
+    Every newly registered account is an analyst.
 
-    There is no admin hierarchy in the Argus application.
+    There is no admin hierarchy in Argus.
     """
 
     body = request.get_json(
@@ -197,7 +198,7 @@ def register():
                 "error": "username already taken"
             }), 409
 
-        # Every new user is a normal analyst.
+        # Every normal registered user is an analyst.
         role = "analyst"
 
         cursor = conn.execute(
@@ -294,7 +295,7 @@ def login():
         }), 401
 
     # -----------------------------------------------------
-    # Create fresh JWT
+    # Create JWT
     # -----------------------------------------------------
 
     token = issue_token(
