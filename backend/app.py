@@ -1,42 +1,29 @@
 """
-ARGUS Backend API
+Argus Backend API
 
-Layer 7 Backend
-
-Main responsibilities:
-
-- User registration
-- User login
-- JWT authentication
-- User-specific scan management
-- User-specific log/event ingestion
-- Detection pipeline
-- User-specific event retrieval
-- User-specific incident retrieval
-
-Each registered user has completely separate:
-- scans
-- uploaded logs
-- events
-- alerts
-- incidents
-- dashboard data
-
-There is no admin panel or admin hierarchy.
-
-Run from project root:
+Run from the project root:
 
     python -m backend.app
+
+Architecture:
+
+    Frontend
+        ↓
+    JWT Authentication
+        ↓
+    Flask REST API
+        ↓
+    SQLite Database
+        ↓
+    Argus Detection Pipeline
+        ↓
+    Alerts / Incidents / Risk
 """
 
-import sys
 import json
+import sys
 from pathlib import Path
 from datetime import datetime, timezone
-
-from flask import Flask, jsonify, request, g
-from flask_cors import CORS
-
 
 # =========================================================
 # PROJECT ROOT
@@ -49,22 +36,28 @@ if str(PROJECT_ROOT) not in sys.path:
 
 
 # =========================================================
-# ARGUS IMPORTS
+# FLASK
 # =========================================================
 
-from backend.auth import (
-    issue_token,
-    hash_password,
-    verify_password,
-    require_auth,
-)
+from flask import Flask, jsonify, request, g
+from flask_cors import CORS
+
+
+# =========================================================
+# ARGUS MODULES
+# =========================================================
 
 from backend.config import Config, DB_PATH
 
+from backend.auth import (
+    require_auth,
+    hash_password,
+    verify_password,
+    issue_token,
+)
+
 from database.db import Database
-
 from collectors.collector import store_raw_event
-
 from detection_engine.pipeline import run_pipeline
 
 
@@ -74,11 +67,58 @@ from detection_engine.pipeline import run_pipeline
 
 app = Flask(__name__)
 
-CORS(app)
-
 app.config["SECRET_KEY"] = Config.SECRET_KEY
 
+
+# =========================================================
+# CORS
+# =========================================================
+#
+# Frontend:
+#   http://127.0.0.1:5500
+#   http://localhost:5500
+#
+# Backend:
+#   http://127.0.0.1:5000
+#
+# =========================================================
+
+CORS(
+    app,
+    resources={
+        r"/api/*": {
+            "origins": [
+                "http://127.0.0.1:5500",
+                "http://localhost:5500",
+            ]
+        }
+    },
+    supports_credentials=False,
+)
+
+
+# =========================================================
+# DATABASE
+# =========================================================
+
 db = Database(DB_PATH)
+
+
+# =========================================================
+# HELPER
+# =========================================================
+
+def get_current_user_id():
+    """
+    Return the authenticated user's ID from the JWT.
+
+    require_auth must run before this function is called.
+    """
+
+    try:
+        return int(g.current_user["sub"])
+    except (KeyError, TypeError, ValueError):
+        return None
 
 
 # =========================================================
@@ -89,8 +129,9 @@ db = Database(DB_PATH)
 def health():
 
     return jsonify({
+        "app": Config.APP_NAME,
+        "env": Config.APP_ENV,
         "status": "ok",
-        "service": "Argus backend"
     }), 200
 
 
@@ -100,21 +141,27 @@ def health():
 
 @app.route("/api/auth/register", methods=["POST"])
 def register():
+    """
+    Public registration.
 
-    payload = request.get_json(
+    Every newly registered account is an analyst.
+
+    There is no admin hierarchy in Argus.
+    """
+
+    body = request.get_json(
         force=True,
         silent=True
     ) or {}
 
-    username = payload.get("username")
-    password = payload.get("password")
+    username = body.get("username")
+    password = body.get("password")
 
     # -----------------------------------------------------
-    # Validate username and password
+    # Validate input
     # -----------------------------------------------------
 
     if not username or not password:
-
         return jsonify({
             "error": "username and password are required"
         }), 400
@@ -122,13 +169,11 @@ def register():
     username = str(username).strip()
 
     if len(username) < 3:
-
         return jsonify({
             "error": "username must be at least 3 characters"
         }), 400
 
     if len(password) < 6:
-
         return jsonify({
             "error": "password must be at least 6 characters"
         }), 400
@@ -138,8 +183,6 @@ def register():
     # -----------------------------------------------------
 
     with db.session() as conn:
-
-        # Check duplicate username
 
         existing = conn.execute(
             """
@@ -151,26 +194,12 @@ def register():
         ).fetchone()
 
         if existing:
-
             return jsonify({
-                "error": "username already exists"
+                "error": "username already taken"
             }), 409
 
-        # -------------------------------------------------
-        # Every normal registration is a normal user
-        # -------------------------------------------------
-
+        # Every normal registered user is an analyst.
         role = "analyst"
-
-        # -------------------------------------------------
-        # Hash password
-        # -------------------------------------------------
-
-        password_hash = hash_password(password)
-
-        # -------------------------------------------------
-        # Insert user
-        # -------------------------------------------------
 
         cursor = conn.execute(
             """
@@ -185,46 +214,44 @@ def register():
             """,
             (
                 username,
-                password_hash,
+                hash_password(password),
                 role,
-                datetime.now(timezone.utc).isoformat()
-            )
+                datetime.now(timezone.utc).isoformat(),
+            ),
         )
 
         user_id = cursor.lastrowid
 
-    # -----------------------------------------------------
-    # Registration successful
-    # -----------------------------------------------------
-
     return jsonify({
         "message": "registration successful",
-        "user_id": user_id,
-        "username": username
+        "user": {
+            "id": user_id,
+            "username": username,
+            "role": role,
+        },
     }), 201
 
 
 # =========================================================
-# USER LOGIN
+# LOGIN
 # =========================================================
 
 @app.route("/api/auth/login", methods=["POST"])
 def login():
 
-    payload = request.get_json(
+    body = request.get_json(
         force=True,
         silent=True
     ) or {}
 
-    username = payload.get("username")
-    password = payload.get("password")
+    username = body.get("username")
+    password = body.get("password")
 
     # -----------------------------------------------------
     # Validate input
     # -----------------------------------------------------
 
     if not username or not password:
-
         return jsonify({
             "error": "username and password are required"
         }), 400
@@ -251,64 +278,57 @@ def login():
         ).fetchone()
 
     # -----------------------------------------------------
-    # User doesn't exist
+    # Verify credentials
     # -----------------------------------------------------
 
     if not user:
-
         return jsonify({
             "error": "invalid username or password"
         }), 401
-
-    # -----------------------------------------------------
-    # Verify password
-    # -----------------------------------------------------
 
     if not verify_password(
         password,
         user["password_hash"]
     ):
-
         return jsonify({
             "error": "invalid username or password"
         }), 401
 
     # -----------------------------------------------------
-    # Generate JWT token
+    # Create JWT
     # -----------------------------------------------------
 
     token = issue_token(
         user_id=user["id"],
         username=user["username"],
-        role=user["role"]
+        role=user["role"],
     )
-
-    # -----------------------------------------------------
-    # Login successful
-    # -----------------------------------------------------
 
     return jsonify({
         "message": "login successful",
-
         "token": token,
-
         "user": {
             "id": user["id"],
             "username": user["username"],
-            "role": user["role"]
-        }
+            "role": user["role"],
+        },
     }), 200
 
 
 # =========================================================
-# CREATE NEW SCAN
+# CREATE SCAN
 # =========================================================
 
 @app.route("/api/scans", methods=["POST"])
 @require_auth
 def create_scan():
 
-    user_id = int(g.current_user["sub"])
+    user_id = get_current_user_id()
+
+    if user_id is None:
+        return jsonify({
+            "error": "invalid authenticated user"
+        }), 401
 
     with db.session() as conn:
 
@@ -318,22 +338,26 @@ def create_scan():
             (
                 user_id,
                 started_at,
-                status
+                status,
+                total_events,
+                threats_found
             )
-            VALUES (?, ?, ?)
+            VALUES (?, ?, ?, ?, ?)
             """,
             (
                 user_id,
                 datetime.now(timezone.utc).isoformat(),
-                "active"
-            )
+                "active",
+                0,
+                0,
+            ),
         )
 
         scan_id = cursor.lastrowid
 
     return jsonify({
         "scan_id": scan_id,
-        "status": "active"
+        "status": "active",
     }), 201
 
 
@@ -345,7 +369,12 @@ def create_scan():
 @require_auth
 def list_scans():
 
-    user_id = int(g.current_user["sub"])
+    user_id = get_current_user_id()
+
+    if user_id is None:
+        return jsonify({
+            "error": "invalid authenticated user"
+        }), 401
 
     with db.session() as conn:
 
@@ -372,58 +401,61 @@ def list_scans():
 
 
 # =========================================================
-# INGEST EVENT / LOG
+# INGEST EVENT / LOG UPLOAD
 # =========================================================
 
 @app.route("/api/events", methods=["POST"])
 @require_auth
 def ingest_event():
 
-    user_id = int(g.current_user["sub"])
+    # -----------------------------------------------------
+    # Get authenticated user
+    # -----------------------------------------------------
+
+    user_id = get_current_user_id()
+
+    if user_id is None:
+        return jsonify({
+            "error": "invalid authenticated user"
+        }), 401
+
+    # -----------------------------------------------------
+    # Read JSON
+    # -----------------------------------------------------
 
     payload = request.get_json(
         force=True,
         silent=True
     )
 
-    # -----------------------------------------------------
-    # Validate payload
-    # -----------------------------------------------------
-
     if not payload:
-
         return jsonify({
             "error": "invalid or missing JSON body"
         }), 400
 
     # -----------------------------------------------------
-    # Get Scan ID
+    # Get scan ID
     # -----------------------------------------------------
 
     scan_id = request.headers.get("X-Scan-ID")
 
     if not scan_id:
-
         return jsonify({
             "error": "X-Scan-ID header is required"
         }), 400
 
-    # -----------------------------------------------------
-    # Convert Scan ID to integer
-    # -----------------------------------------------------
-
     try:
-
         scan_id = int(scan_id)
-
     except (ValueError, TypeError):
-
         return jsonify({
             "error": "X-Scan-ID must be a number"
         }), 400
 
     # -----------------------------------------------------
-    # Verify scan belongs to logged-in user
+    # Verify scan ownership
+    # -----------------------------------------------------
+    #
+    # User A cannot upload into User B's scan.
     # -----------------------------------------------------
 
     with db.session() as conn:
@@ -440,18 +472,16 @@ def ingest_event():
             """,
             (
                 scan_id,
-                user_id
-            )
+                user_id,
+            ),
         ).fetchone()
 
     if not scan:
-
         return jsonify({
             "error": "scan not found or does not belong to this user"
-        }), 404
+        }), 403
 
     if scan["status"] != "active":
-
         return jsonify({
             "error": "scan is not active"
         }), 400
@@ -469,27 +499,49 @@ def ingest_event():
     # Store raw event
     # -----------------------------------------------------
 
-    raw_event_id = store_raw_event(
-        db,
-        source,
-        payload
-    )
+    try:
+
+        raw_event_id = store_raw_event(
+            db,
+            source,
+            payload
+        )
+
+    except Exception as exc:
+
+        app.logger.exception(
+            "Failed to store raw event"
+        )
+
+        return jsonify({
+            "error": "failed to store event",
+            "details": str(exc),
+        }), 500
 
     # -----------------------------------------------------
-    # Run ARGUS detection pipeline
+    # Run Argus detection pipeline
     # -----------------------------------------------------
 
-    result = run_pipeline(
-        db,
-        raw_event_id,
-        payload,
-        scan_id=scan_id,
-        user_id=user_id
-    )
+    try:
 
-    # -----------------------------------------------------
-    # Return result
-    # -----------------------------------------------------
+        result = run_pipeline(
+            db,
+            raw_event_id,
+            payload,
+            scan_id=scan_id,
+            user_id=user_id,
+        )
+
+    except Exception as exc:
+
+        app.logger.exception(
+            "Argus pipeline failed"
+        )
+
+        return jsonify({
+            "error": "detection pipeline failed",
+            "details": str(exc),
+        }), 500
 
     return jsonify(result), 201
 
@@ -502,7 +554,12 @@ def ingest_event():
 @require_auth
 def list_events():
 
-    user_id = int(g.current_user["sub"])
+    user_id = get_current_user_id()
+
+    if user_id is None:
+        return jsonify({
+            "error": "invalid authenticated user"
+        }), 401
 
     with db.session() as conn:
 
@@ -533,7 +590,12 @@ def list_events():
 @require_auth
 def list_incidents():
 
-    user_id = int(g.current_user["sub"])
+    user_id = get_current_user_id()
+
+    if user_id is None:
+        return jsonify({
+            "error": "invalid authenticated user"
+        }), 401
 
     with db.session() as conn:
 
@@ -557,14 +619,16 @@ def list_incidents():
 # GET SINGLE INCIDENT
 # =========================================================
 
-@app.route(
-    "/api/incidents/<int:incident_id>",
-    methods=["GET"]
-)
+@app.route("/api/incidents/<int:incident_id>", methods=["GET"])
 @require_auth
 def get_incident(incident_id):
 
-    user_id = int(g.current_user["sub"])
+    user_id = get_current_user_id()
+
+    if user_id is None:
+        return jsonify({
+            "error": "invalid authenticated user"
+        }), 401
 
     with db.session() as conn:
 
@@ -581,12 +645,11 @@ def get_incident(incident_id):
             """,
             (
                 incident_id,
-                user_id
-            )
+                user_id,
+            ),
         ).fetchone()
 
         if not row:
-
             return jsonify({
                 "error": "incident not found"
             }), 404
@@ -594,7 +657,7 @@ def get_incident(incident_id):
         incident = dict(row)
 
         # -------------------------------------------------
-        # Get related event IDs
+        # Decode related event IDs
         # -------------------------------------------------
 
         try:
@@ -603,7 +666,10 @@ def get_incident(incident_id):
                 incident.get("event_ids", "[]")
             )
 
-        except (json.JSONDecodeError, TypeError):
+        except (
+            json.JSONDecodeError,
+            TypeError,
+        ):
 
             event_ids = []
 
@@ -614,8 +680,7 @@ def get_incident(incident_id):
         if event_ids:
 
             placeholders = ",".join(
-                "?"
-                for _ in event_ids
+                "?" for _ in event_ids
             )
 
             events = conn.execute(
@@ -627,7 +692,7 @@ def get_incident(incident_id):
                 WHERE e.id IN ({placeholders})
                   AND s.user_id = ?
                 """,
-                event_ids + [user_id]
+                event_ids + [user_id],
             ).fetchall()
 
             incident["events"] = [
@@ -648,26 +713,18 @@ def get_incident(incident_id):
 
 if __name__ == "__main__":
 
-    print("[Argus] starting...")
-
-    # -----------------------------------------------------
-    # Validate configuration
-    # -----------------------------------------------------
-
     Config.validate()
-
-    # -----------------------------------------------------
-    # Make sure database tables exist
-    # -----------------------------------------------------
 
     db.init_schema()
 
-    # -----------------------------------------------------
-    # Start Flask server
-    # -----------------------------------------------------
+    print(
+        f"[{Config.APP_NAME}] "
+        f"starting in {Config.APP_ENV} mode "
+        f"— database: {DB_PATH}"
+    )
 
     app.run(
         host="127.0.0.1",
         port=5000,
-        debug=Config.DEBUG
+        debug=Config.DEBUG,
     )
