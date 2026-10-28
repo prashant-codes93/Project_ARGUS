@@ -1,40 +1,126 @@
 """
-Risk assessment (Layer 6).
+Risk Assessment (Layer 6)
 
-Turns a correlated incident into a 0-100 risk score and a human-readable
-level. SEVERITY_WEIGHTS and the score thresholds are a starting point -
-the dev team should calibrate these against real incident data before
-relying on them to drive on-call urgency.
+Calculates a 0-100 risk score for a correlated incident
+and stores the incident against the authenticated user.
 """
 
 import json
 from datetime import datetime, timezone
 
-SEVERITY_WEIGHTS = {"low": 5, "medium": 15, "high": 30, "critical": 45}
+
+# ---------------------------------------------------------
+# Severity weights
+# ---------------------------------------------------------
+
+SEVERITY_WEIGHTS = {
+    "low": 5,
+    "medium": 15,
+    "high": 30,
+    "critical": 45,
+}
 
 
-def score_incident(triggered_rules: list[dict], related_event_count: int) -> tuple[int, str]:
-    base = sum(SEVERITY_WEIGHTS.get(r["severity"], 5) for r in triggered_rules)
-    spread_bonus = min(related_event_count * 2, 20)
-    score = min(base + spread_bonus, 100)
+# ---------------------------------------------------------
+# Calculate risk score
+# ---------------------------------------------------------
+
+def score_incident(
+    triggered_rules: list[dict],
+    related_event_count: int,
+) -> tuple[int, str]:
+
+    base = sum(
+        SEVERITY_WEIGHTS.get(
+            rule.get("severity", "low"),
+            5,
+        )
+        for rule in triggered_rules
+    )
+
+    spread_bonus = min(
+        related_event_count * 2,
+        20,
+    )
+
+    score = min(
+        base + spread_bonus,
+        100,
+    )
+
+
+    # -----------------------------------------------------
+    # Risk level
+    # -----------------------------------------------------
 
     if score >= 75:
         level = "critical"
+
     elif score >= 50:
         level = "high"
+
     elif score >= 25:
         level = "medium"
+
     else:
         level = "low"
+
 
     return score, level
 
 
-def save_incident(conn, rules: list[str], event_ids: list[int], score: int, level: str) -> int:
-    title = f"{rules[0].replace('_', ' ').title()} incident"
+# ---------------------------------------------------------
+# Save incident
+# ---------------------------------------------------------
+
+def save_incident(
+    conn,
+    user_id: int | None,
+    rules: list[str],
+    event_ids: list[int],
+    score: int,
+    level: str,
+) -> int:
+
+    # -----------------------------------------------------
+    # Create incident title
+    # -----------------------------------------------------
+
+    if rules:
+        title = (
+            f"{rules[0].replace('_', ' ').title()} incident"
+        )
+
+    else:
+        title = "Security incident"
+
+
+    # -----------------------------------------------------
+    # Insert incident
+    # -----------------------------------------------------
+
     cur = conn.execute(
-        """INSERT INTO incidents (title, event_ids, risk_score, risk_level, created_at)
-           VALUES (?, ?, ?, ?, ?)""",
-        (title, json.dumps(event_ids), score, level, datetime.now(timezone.utc).isoformat()),
+        """
+        INSERT INTO incidents
+        (
+            user_id,
+            title,
+            event_ids,
+            risk_score,
+            risk_level,
+            created_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        (
+            user_id,
+            title,
+            json.dumps(event_ids),
+            score,
+            level,
+            datetime.now(timezone.utc).isoformat(),
+        ),
     )
+
+
     return cur.lastrowid
