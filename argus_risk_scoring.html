@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ARGUS · Risk Scoring</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/argus_risk_scoring.css">
+</head>
+<body>
+<aside>
+  <div class="logo">
+    <svg width="54" height="46" viewBox="0 0 54 46" fill="none" aria-hidden="true"><path d="M27 3 46 10v11c0 9-8 16-19 20C16 37 8 30 8 21V10z" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"/><path d="M13 22c4-6 9-9 14-9s10 3 14 9c-4 6-9 9-14 9s-10-3-14-9z" stroke="var(--ink)" stroke-width="2.5"/><circle cx="27" cy="22" r="5.5" fill="var(--acc)"/><path d="M40 3h6v6" stroke="var(--acc)" stroke-width="3"/></svg>
+    <b>ARGUS</b>
+  </div>
+  <nav aria-label="Main">
+    <div class="grp">SECURITY</div>
+    <a href="argus_dashboard.html"><i>◉</i>Dashboard</a>
+    <a href="argus_events.html"><i>▣</i>Events</a>
+    <a href="argus_alerts.html"><i>△</i>Alerts</a>
+    <a href="argus_threat_detection.html"><i>~</i>Threat Detection</a>
+    <a href="argus_investigations.html"><i>⌕</i>Investigations</a>
+    <a href="argus_risk_scoring.html" class="on" aria-current="page"><i>◆</i>Risk Scoring</a>
+    <a href="argus_assets.html"><i>▤</i>Assets</a>
+    <a href="#"><i>▥</i>Reports</a>
+    <div class="grp">SYSTEM</div>
+    <a href="#"><i>✧</i>AI Assistant</a>
+    <a href="#"><i>⚙</i>Settings</a>
+  </nav>
+  <div class="me"><div class="av">RK</div><div>Rohan Kumar<small>ADMIN</small></div></div>
+</aside>
+
+<main>
+  <header>
+    <div><h1>Risk Scoring</h1><p>Evaluate security risks, prioritize incidents and understand potential threats using intelligent risk assessment.</p></div>
+    <div class="tools">
+      <span class="meta">Overall status: <b id="hStatus"></b></span>
+      <span class="meta">Last assessment: <b id="hLast" class="mono"></b></span>
+      <button class="pri" id="refresh">Refresh Assessment</button>
+    </div>
+  </header>
+  <p class="sample" id="note" role="status">Sample data · scores are simulated from illustrative weights, not produced by the ARGUS backend.</p>
+
+  <section class="stats" id="stats"></section>
+
+  <section class="two-col">
+    <div class="panel box">
+      <h2>Overall Risk Overview</h2>
+      <div class="ovr">
+        <div id="gauge" class="gauge"></div>
+        <dl id="ovDl"></dl>
+      </div>
+      <p class="note small" id="method"></p>
+    </div>
+    <div class="panel box">
+      <h2>Risk Distribution <small>follows the filters below</small></h2>
+      <div id="dist"></div>
+    </div>
+  </section>
+
+  <section class="two-col">
+    <div class="panel box">
+      <h2>Top Risk Incidents</h2>
+      <ol id="top" class="toplist"></ol>
+    </div>
+    <div class="panel box">
+      <h2>Risk Assessment Factors <small>proposed model</small></h2>
+      <div id="factors"></div>
+    </div>
+  </section>
+
+  <section class="panel filters">
+    <input id="q" type="search" placeholder="Search by incident ID or title..." aria-label="Search incidents">
+    <select id="fl" aria-label="Risk level"><option value="">Level: All</option><option value="critical">Critical</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select>
+    <select id="fc" aria-label="Threat category"><option value="">Category: All</option></select>
+    <input id="fmin" type="number" min="0" max="100" placeholder="Min" aria-label="Minimum score">
+    <input id="fmax" type="number" min="0" max="100" placeholder="Max" aria-label="Maximum score">
+    <input id="fd" type="date" aria-label="Assessment date">
+    <select id="fsort" aria-label="Sort"><option value="high">Sort: Highest risk</option><option value="low">Lowest risk</option><option value="new">Latest assessment</option></select>
+    <button id="clr">Clear</button>
+  </section>
+
+  <section class="panel">
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Incident ID</th><th>Incident title</th><th>Related alert</th><th>Threat category</th><th>Risk score</th><th>Risk level</th><th>Affected asset</th><th>Last assessed</th><th>Action</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div id="none" class="empty" hidden>No incidents match these filters. Clear the filters to see everything.</div>
+    <div class="foot"><span id="cnt"></span><span>Sample data · changes are not saved</span></div>
+  </section>
+</main>
+
+<div id="dr" role="dialog" aria-label="Risk assessment details" aria-hidden="true"></div>
+<script src="js/argus_risk_scoring.js"></script>
+</body>
+</html>

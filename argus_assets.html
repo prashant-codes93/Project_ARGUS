@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ARGUS · Assets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/argus_assets.css">
+</head>
+<body>
+<aside>
+  <div class="logo">
+    <svg width="54" height="46" viewBox="0 0 54 46" fill="none" aria-hidden="true"><path d="M27 3 46 10v11c0 9-8 16-19 20C16 37 8 30 8 21V10z" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"/><path d="M13 22c4-6 9-9 14-9s10 3 14 9c-4 6-9 9-14 9s-10-3-14-9z" stroke="var(--ink)" stroke-width="2.5"/><circle cx="27" cy="22" r="5.5" fill="var(--acc)"/><path d="M40 3h6v6" stroke="var(--acc)" stroke-width="3"/></svg>
+    <b>ARGUS</b>
+  </div>
+  <nav aria-label="Main">
+    <div class="grp">SECURITY</div>
+    <a href="argus_dashboard.html"><i>◉</i>Dashboard</a>
+    <a href="argus_events.html"><i>▣</i>Events</a>
+    <a href="argus_alerts.html"><i>△</i>Alerts</a>
+    <a href="argus_threat_detection.html"><i>~</i>Threat Detection</a>
+    <a href="argus_investigations.html"><i>⌕</i>Investigations</a>
+    <a href="argus_risk_scoring.html"><i>◆</i>Risk Scoring</a>
+    <a href="argus_assets.html" class="on" aria-current="page"><i>▤</i>Assets</a>
+    <a href="#"><i>▥</i>Reports</a>
+    <div class="grp">SYSTEM</div>
+    <a href="#"><i>✧</i>AI Assistant</a>
+    <a href="#"><i>⚙</i>Settings</a>
+  </nav>
+  <div class="me"><div class="av">RK</div><div>Rohan Kumar<small>ADMIN</small></div></div>
+</aside>
+
+<main>
+  <header>
+    <div><h1>Assets</h1><p>Monitor, manage and secure your infrastructure through centralized asset visibility and risk monitoring.</p></div>
+    <div class="tools">
+      <button class="pri" id="addBtn">+ Add New Asset</button>
+      <button id="exp">Export Assets</button>
+      <button id="ref">Refresh</button>
+    </div>
+  </header>
+  <p class="sample" id="note" role="status">Sample data · the backend has no assets API yet. Changes stay in this browser tab and are not saved.</p>
+
+  <section class="stats" id="stats"></section>
+
+  <section class="two-col">
+    <div class="panel box"><h2>Asset Categories</h2><div id="cats"></div></div>
+    <div class="panel box"><h2>Security Monitoring <small>security status is separate from availability</small></h2><div id="mon"></div></div>
+  </section>
+
+  <section class="panel filters">
+    <input id="q" type="search" placeholder="Search asset name, ID or IP..." aria-label="Search assets">
+    <select id="ft" aria-label="Asset type"><option value="">Type: All</option></select>
+    <select id="fc" aria-label="Criticality"><option value="">Criticality: All</option><option>critical</option><option>high</option><option>medium</option><option>low</option></select>
+    <select id="fs" aria-label="Security status"><option value="">Security: All</option><option value="secure">Secure</option><option value="warning">Warning</option><option value="risk">At Risk</option></select>
+    <select id="fr" aria-label="Risk score"><option value="">Risk: All</option><option value="0-24">0–24 Low</option><option value="25-49">25–49 Medium</option><option value="50-74">50–74 High</option><option value="75-100">75–100 Critical</option></select>
+    <select id="fsort" aria-label="Sort"><option value="id">Sort: Asset ID</option><option value="name">Name</option><option value="risk">Highest risk</option><option value="seen">Last seen</option></select>
+    <button id="clr">Clear</button>
+  </section>
+
+  <section class="panel">
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Asset ID</th><th>Asset name</th><th>Type</th><th>IP address</th><th>Operating system</th><th>Criticality</th><th>Security status</th><th>Risk score</th><th>Last seen</th><th>Action</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div id="none" class="empty" hidden>No assets match these filters. Clear the filters to see everything.</div>
+    <div class="foot"><span id="cnt"></span><span>Sample data · changes are not saved</span></div>
+  </section>
+
+  <h2 class="sec">Vulnerabilities <small>Sample records only. ARGUS has no vulnerability scanner.</small></h2>
+  <section class="panel filters">
+    <select id="vs" aria-label="Vulnerability severity"><option value="">Severity: All</option><option>critical</option><option>high</option><option>medium</option><option>low</option></select>
+    <select id="vr" aria-label="Remediation status"><option value="">Remediation: All</option><option>open</option><option>in progress</option><option>fixed</option></select>
+    <select id="vsort" aria-label="Sort vulnerabilities"><option value="cvss">Sort: CVSS high to low</option><option value="date">Detection date</option></select>
+  </section>
+  <section class="panel"><div class="scroll"><table class="vt">
+    <thead><tr><th>ID</th><th>Name</th><th>CVE</th><th>Severity</th><th>CVSS</th><th>Asset</th><th>Detected</th><th>Remediation</th></tr></thead>
+    <tbody id="vrows"></tbody></table></div></section>
+</main>
+
+<div id="dr" role="dialog" aria-label="Asset details" aria-hidden="true"></div>
+
+<dialog id="nd" aria-label="Asset form">
+  <form id="ndf" novalidate>
+    <h2 id="ndt">Add New Asset</h2>
+    <label for="a-name">Asset name *</label><input id="a-name">
+    <div class="two">
+      <div><label for="a-type">Asset type *</label><select id="a-type"></select></div>
+      <div><label for="a-ip">IP address *</label><input id="a-ip" placeholder="e.g. 10.0.0.40"></div>
+      <div><label for="a-mac">MAC address</label><input id="a-mac" placeholder="optional"></div>
+      <div><label for="a-host">Hostname</label><input id="a-host"></div>
+      <div><label for="a-os">Operating system</label><input id="a-os"></div>
+      <div><label for="a-osv">OS version</label><input id="a-osv"></div>
+      <div><label for="a-owner">Asset owner</label><input id="a-owner"></div>
+      <div><label for="a-loc">Location</label><input id="a-loc"></div>
+      <div><label for="a-crit">Business criticality *</label><select id="a-crit"><option>critical</option><option>high</option><option selected>medium</option><option>low</option></select></div>
+      <div><label for="a-env">Environment</label><select id="a-env"><option>Production</option><option>Development</option><option>Testing</option></select></div>
+    </div>
+    <label for="a-desc">Description</label><textarea id="a-desc" rows="2"></textarea>
+    <p id="a-err" class="err" role="alert"></p>
+    <div class="acts"><button type="button" id="ndc">Cancel</button><button type="submit" class="pri">Save asset</button></div>
+  </form>
+</dialog>
+<script src="js/argus_assets.js"></script>
+</body>
+</html>

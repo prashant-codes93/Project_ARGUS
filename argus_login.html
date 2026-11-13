@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="icons/argus_logo.jpeg" style="height: fit-content;">
+<title>Argus — Sign In</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/argus_login.css">
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- LEFT: evidence graph stage -->
+  <div class="stage">
+    <svg class="graph" viewBox="0 0 600 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <linearGradient id="edgeGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#2e5cb8" stop-opacity="0.22"/>
+          <stop offset="100%" stop-color="#2e5cb8" stop-opacity="0.06"/>
+        </linearGradient>
+      </defs>
+      <g stroke="url(#edgeGrad)" stroke-width="1" fill="none">
+        <line x1="80" y1="140" x2="220" y2="230"/>
+        <line x1="220" y1="230" x2="150" y2="340"/>
+        <line x1="220" y1="230" x2="360" y2="200"/>
+        <line x1="360" y1="200" x2="470" y2="290"/>
+        <line x1="150" y1="340" x2="260" y2="420"/>
+        <line x1="260" y1="420" x2="470" y2="290"/>
+        <line x1="260" y1="420" x2="200" y2="540"/>
+        <line x1="200" y1="540" x2="330" y2="610"/>
+        <line x1="330" y1="610" x2="470" y2="290"/>
+        <line x1="470" y1="290" x2="530" y2="420"/>
+        <line x1="330" y1="610" x2="420" y2="700"/>
+        <line x1="80" y1="140" x2="60" y2="300"/>
+        <line x1="60" y1="300" x2="150" y2="340"/>
+      </g>
+      <g class="pulse" stroke="#2e5cb8" stroke-width="1.4" fill="none" opacity="0">
+        <line x1="220" y1="230" x2="360" y2="200"/>
+        <animate attributeName="opacity" values="0;0.55;0" dur="3.2s" repeatCount="indefinite" begin="0.2s"/>
+      </g>
+      <g class="pulse2" stroke="#2e5cb8" stroke-width="1.4" fill="none" opacity="0">
+        <line x1="260" y1="420" x2="200" y2="540"/>
+        <animate attributeName="opacity" values="0;0.55;0" dur="3.6s" repeatCount="indefinite" begin="1.4s"/>
+      </g>
+      <g fill="#ffffff" stroke="#2e5cb8" stroke-width="1.3" stroke-opacity="0.55">
+        <circle cx="80" cy="140" r="5"/>
+        <circle cx="60" cy="300" r="4"/>
+        <circle cx="150" cy="340" r="5"/>
+        <circle cx="470" cy="290" r="6"/>
+        <circle cx="200" cy="540" r="4"/>
+        <circle cx="330" cy="610" r="5"/>
+        <circle cx="530" cy="420" r="4"/>
+        <circle cx="420" cy="700" r="4"/>
+      </g>
+      <g fill="#2e5cb8" opacity="0.75">
+        <circle cx="220" cy="230" r="5.5">
+          <animate attributeName="r" values="5.5;8;5.5" dur="2.4s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="360" cy="200" r="4"/>
+        <circle cx="260" cy="420" r="6.5">
+          <animate attributeName="r" values="6.5;9.5;6.5" dur="2.8s" repeatCount="indefinite" begin="0.6s"/>
+        </circle>
+      </g>
+    </svg>
+
+    <div class="brandmark">
+      <img src="icons/argus_logo-removebg-preview.png">
+    </div>
+
+    <div class="stage-copy">
+      <p class="kicker">SYSTEM ONLINE</p>
+      <h1>Isolated logs don't tell the story. The graph does.</h1>
+      <p>Sign in to correlate security events, trace evidence across sessions, and follow an incident from first anomaly to root cause.</p>
+    </div>
+
+    <div class="stage-foot">
+      <div><strong>6</strong>signal types</div>
+      <div><strong>Graph</strong>evidence model</div>
+      <div><strong>JWT</strong>secured session</div>
+    </div>
+  </div>
+
+  <!-- RIGHT: sign-in form -->
+  <div class="panel">
+    <div class="form-wrap">
+
+      <div class="mobile-brand">
+        <img src="icons/argus_logo-removebg-preview.png">
+      </div>
+
+      <h2>Sign in</h2>
+      <p class="sub">Investigate incidents where you left off.</p>
+
+      <div class="form-msg" id="formMsg" role="alert"></div>
+
+      <form id="loginForm" novalidate>
+        <div class="field">
+          <label for="identifier">Username or email</label>
+          <div class="field-input">
+            <input type="text" id="identifier" name="identifier" placeholder="rohan.kumar" autocomplete="username" required>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="field-input">
+            <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password" required>
+            <button type="button" class="toggle-visibility" id="toggleVisibility" aria-label="Show password" aria-pressed="false">
+              <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-7.5 11-7.5S23 12 23 12s-4 7.5-11 7.5S1 12 1 12z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="row-between">
+          <label class="remember">
+            <input type="checkbox" id="remember" name="remember">
+            Keep me signed in
+          </label>
+          <a href="#" id="forgotLink">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="submit">
+          Sign in
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </form>
+
+      <p class="signup">Don't have an account? <a href="argus_register.html" id="registerLink">Create one</a></p>
+
+      <div class="role-hint">
+        <span class="dot"></span>
+        <span>Access scope is set by role — User, Analyst or Admin — and applied automatically after sign-in.</span>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script src="js/argus_login.js">
+ 
+</script>
+
+</body>
+</html>
