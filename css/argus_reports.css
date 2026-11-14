@@ -1,0 +1,104 @@
+/* ARGUS Reports page. Base styles (variables, sidebar, cards, table, badges)
+   come from the Events stylesheet, as on the Alerts and Assets pages.
+   Only Reports-specific rules are added below. */
+@import url("argus_events.css");
+
+header .tools { flex-wrap: wrap; align-items: flex-end; }
+.period { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--mute); }
+button.pri { background: var(--acc); border-color: var(--acc); color: #fff; }
+button.pri:hover:not(:disabled) { border-color: var(--ink); }
+button.dng { background: var(--crit); border-color: var(--crit); color: #fff; }
+
+.sample { font-size: 13px; color: var(--mute); margin: 0 0 16px; }
+.foot-note { margin: 10px 0 0; }
+h2.sec { font-size: 18px; margin: 24px 0 10px; }
+h2.sec small { font-weight: 400; color: var(--mute); font-size: 12px; margin-left: 6px; }
+.box { padding: 18px 20px; }
+.filters input[type="date"] { flex: none; min-width: 0; }
+
+/* ---------- category cards ---------- */
+.cats { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; margin-bottom: 8px; }
+.cat { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.cat:hover { border-color: var(--acc); }
+.cat-h { display: flex; align-items: center; gap: 10px; }
+.cat-ic { width: 32px; height: 32px; border-radius: 6px; background: var(--accbg); color: var(--acc); display: grid; place-items: center; font-size: 15px; flex: none; }
+.cat h3 { margin: 0; font-size: 15px; }
+.cat p { margin: 0; color: var(--mute); font-size: 13px; }
+.cat .cov { font-size: 12px; color: var(--ink); }
+.cat .tag-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.cat button { margin-top: auto; align-self: flex-start; }
+.tag { display: inline-block; font: 500 11px "JetBrains Mono", ui-monospace, monospace; padding: 2px 7px; border-radius: 4px; background: #e8ecf3; color: var(--mute); }
+.tag.api { background: var(--accbg); color: var(--acc); }
+
+/* ---------- tabs ---------- */
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px solid var(--line); }
+.tabs button { border: 0; border-bottom: 3px solid transparent; border-radius: 0; background: none; color: var(--mute); padding: 8px 12px; }
+.tabs button[aria-selected="true"] { color: var(--acc); border-bottom-color: var(--acc); font-weight: 600; }
+
+/* ---------- report body (analytics + preview) ---------- */
+.rt h3 { font-size: 14px; margin: 20px 0 8px; }
+.kv { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.kv div { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+.kv b { display: block; font-size: 22px; font-weight: 600; line-height: 1.2; }
+.kv span { color: var(--mute); font-size: 12px; }
+.charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.chart { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; min-width: 0; }
+.chart h4 { margin: 0 0 10px; font-size: 13px; }
+.brow { display: grid; grid-template-columns: minmax(70px, 38%) 1fr 32px; gap: 8px; align-items: center; margin-bottom: 7px; font-size: 12px; }
+.brow span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.brow b { text-align: right; font-family: "JetBrains Mono", ui-monospace, monospace; font-weight: 500; }
+.bar { height: 10px; background: #e8ecf3; border-radius: 5px; overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: var(--acc); border-radius: 5px; }
+.bar i.critical { background: var(--crit); } .bar i.high { background: var(--high); }
+.bar i.medium { background: var(--med); } .bar i.low { background: var(--low); }
+.line { width: 100%; height: auto; display: block; }
+.line .ln { fill: none; stroke: var(--acc); stroke-width: 2; }
+.line .dt { fill: var(--acc); }
+.line .ax { stroke: var(--line); }
+.line text { font: 10px "JetBrains Mono", ui-monospace, monospace; fill: var(--mute); }
+.nodata { color: var(--mute); font-size: 13px; margin: 0; }
+.rt .scroll { border: 1px solid var(--line); border-radius: 8px; }
+.rt table { min-width: 560px; font-size: 13px; }
+.rt th, .rt td { padding: 9px 12px; }
+.rt ul { margin: 0; padding-left: 18px; }
+.rt li { margin-bottom: 4px; }
+.guide-label { font-size: 12px; color: var(--mute); margin: 0 0 6px; }
+.notes { font-size: 12px; color: var(--mute); margin-top: 16px; }
+
+/* ---------- generated reports table ---------- */
+table.rtbl { min-width: 1060px; }
+td.mono, td.rng { font: 500 12px "JetBrains Mono", ui-monospace, monospace; }
+.st-completed { color: var(--low); font-weight: 600; }
+.st-processing { color: var(--info); font-weight: 600; }
+.st-failed { color: var(--crit); font-weight: 600; }
+td.act { white-space: nowrap; }
+td.act button { padding: 5px 10px; font-size: 13px; margin-right: 4px; }
+tbody tr { cursor: default; }
+
+/* ---------- dialogs ---------- */
+dialog { border: 0; border-radius: 14px; padding: 22px; width: min(600px, 94vw); max-height: 92vh; box-shadow: 0 20px 60px rgba(10, 20, 50, .25); font-family: "Space Grotesk", sans-serif; color: var(--ink); }
+dialog.wide { width: min(980px, 96vw); }
+dialog::backdrop { background: rgba(10, 20, 50, .4); }
+dialog h2 { margin: 0 0 6px; font-size: 19px; }
+dialog label { display: block; font-size: 13px; margin: 10px 0 4px; }
+dialog input, dialog select { width: 100%; }
+dialog .two { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+dialog .err { color: var(--crit); font-size: 13px; min-height: 18px; margin: 10px 0 0; }
+dialog .hint { color: var(--mute); font-size: 12px; margin: 10px 0 0; }
+dialog .acts { margin-top: 14px; justify-content: flex-end; flex-wrap: wrap; }
+dialog .acts button { flex: none; }
+.pv-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.pv-meta { display: grid; grid-template-columns: 130px 1fr; gap: 6px 12px; font-size: 13px; margin: 14px 0; }
+.pv-meta dt { color: var(--mute); }
+.pv-meta dd { margin: 0; }
+.pv-fail { border: 1px solid var(--crit); border-radius: 8px; padding: 12px 14px; color: var(--crit); }
+
+.toast { position: fixed; right: 20px; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); max-width: min(420px, 92vw); background: var(--ink); color: #fff; border-radius: 8px; padding: 12px 16px; font-size: 13px; z-index: 20; }
+.toast.err { background: var(--crit); }
+
+@media (max-width: 640px) {
+  dialog .two { grid-template-columns: 1fr; }
+  .pv-meta { grid-template-columns: 1fr; gap: 0; }
+  .pv-meta dd { margin-bottom: 8px; }
+  header .tools { width: 100%; }
+}
