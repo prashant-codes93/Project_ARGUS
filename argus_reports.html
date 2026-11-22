@@ -9,27 +9,82 @@
 <link rel="stylesheet" href="css/argus_reports.css">
 </head>
 <body>
-<aside>
-  <div class="logo">
-    <svg width="54" height="46" viewBox="0 0 54 46" fill="none" aria-hidden="true"><path d="M27 3 46 10v11c0 9-8 16-19 20C16 37 8 30 8 21V10z" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"/><path d="M13 22c4-6 9-9 14-9s10 3 14 9c-4 6-9 9-14 9s-10-3-14-9z" stroke="var(--ink)" stroke-width="2.5"/><circle cx="27" cy="22" r="5.5" fill="var(--acc)"/><path d="M40 3h6v6" stroke="var(--acc)" stroke-width="3"/></svg>
-    <b>ARGUS</b>
-  </div>
-  <nav aria-label="Main">
-    <div class="grp">SECURITY</div>
-    <a href="argus_dashboard.html"><i>◉</i>Dashboard</a>
-    <a href="argus_events.html"><i>▣</i>Events</a>
-    <a href="argus_alerts.html"><i>△</i>Alerts</a>
-    <a href="argus_threat_detection.html"><i>~</i>Threat Detection</a>
-    <a href="argus_investigations.html"><i>⌕</i>Investigations</a>
-    <a href="argus_risk_scoring.html"><i>◆</i>Risk Scoring</a>
-    <a href="argus_assets.html"><i>▤</i>Assets</a>
-    <a href="argus_reports.html" class="on" aria-current="page"><i>▥</i>Reports</a>
-    <div class="grp">SYSTEM</div>
-    <a href="#"><i>✧</i>AI Assistant</a>
-    <a href="#"><i>⚙</i>Settings</a>
-  </nav>
-  <div class="me"><div class="av">RK</div><div>Rohan Kumar<small>ADMIN</small></div></div>
-</aside>
+<aside class="side">
+
+    <div class="side-brand">
+      <img src="icons/argus_logo.jpeg">
+    </div>
+
+    <div class="side-group">Security</div>
+
+    <nav class="side-nav" id="nav">
+
+      <a href="argus_dashboard.html" data-p="Dashboard">
+        <span class="ic">◉</span>Dashboard
+      </a>
+
+      <a href="argus_events.html" data-p="Events">
+        <span class="ic">▣</span>Events
+      </a>
+
+      <a href="argus_alerts.html" data-p="Alerts">
+        <span class="ic">⚠</span>Alerts
+      </a>
+
+      <a href="argus_threat_detection.html" data-p="Threat Detection">
+        <span class="ic">⌁</span>Threat Detection
+      </a>
+
+      <a href="argus_investigations.html" data-p="Investigations">
+        <span class="ic">⌕</span>Investigations
+      </a>
+
+      <a href="argus_risk_scoring.html" data-p="Risk Scoring">
+        <span class="ic">◈</span>Risk Scoring
+      </a>
+
+      <a href="argus_assets.html" data-p="Assets">
+        <span class="ic">▤</span>Assets
+      </a>
+
+      <a href="argus_reports.html" class="on" aria-current="page" data-p="Reports">
+        <span class="ic">▥</span>Reports
+      </a>
+
+    </nav>
+
+    <div class="side-group">System</div>
+
+    <nav class="side-nav">
+
+      <!-- <a href="#" data-p="AI Assistant">
+        <span class="ic">✧</span>AI Assistant
+      </a> -->
+
+      <a href="#" data-p="Settings">
+        <span class="ic">⚙</span>Settings
+      </a>
+
+    </nav>
+
+    <div class="side-foot">
+
+      <div class="who-mark" id="userInitials">U</div>
+
+      <div class="who">
+        <div id="displayUsername">User</div>
+        <div id="displayRole">USER</div>
+      </div>
+
+      <a class="side-signout mono"
+         id="signOut"
+         href="argus_login.html">
+        exit
+      </a>
+
+    </div>
+
+  </aside>
 
 <main>
   <header>
@@ -39,14 +94,14 @@
         <select id="period" aria-label="Report period">
           <option value="7">Last 7 days</option>
           <option value="30" selected>Last 30 days</option>
-          <option value="all">All sample data</option>
+          <option value="all">All dates</option>
         </select>
       </label>
       <button id="exp" title="Download the analytics view below as CSV">Export</button>
       <button class="pri" id="genBtn">Generate Report</button>
     </div>
   </header>
-  <p class="sample" id="note" role="status">Sample data · the backend has no reports, alerts, investigations or assets API. Reports are built in this browser from sample records and are not saved. <span class="mono" id="asof"></span></p>
+  <p class="sample" id="note" role="status">Loading reports…</p>
 
   <section class="stats" id="stats" aria-label="Overview statistics"></section>
 
@@ -80,7 +135,7 @@
       <div class="pg"><button id="prev">Prev</button><span id="pn"></span><button id="next">Next</button></div>
     </div>
   </section>
-  <p class="sample foot-note">Locally generated prototype reports · files exist only in this browser tab and are lost on reload.</p>
+  <p class="sample foot-note">Generated reports are saved to your ARGUS account.</p>
 </main>
 
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
@@ -92,7 +147,7 @@
     <div class="two">
       <div><label for="g-type">Report type *</label><select id="g-type"></select></div>
       <div><label for="g-fmt">Output format *</label><select id="g-fmt"><option value="pdf">PDF</option><option value="csv">CSV</option><option value="json">JSON</option></select></div>
-      <div><label for="g-range">Date range</label><select id="g-range"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="all">All sample data</option><option value="custom">Custom</option></select></div>
+      <div><label for="g-range">Date range</label><select id="g-range"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="all">All dates</option><option value="custom">Custom</option></select></div>
       <div><label for="g-sev">Severity</label><select id="g-sev"><option value="">All severities</option><option value="critical">Critical</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select></div>
       <div><label for="g-start">Start date *</label><input id="g-start" type="date"></div>
       <div><label for="g-end">End date *</label><input id="g-end" type="date"></div>
@@ -114,5 +169,16 @@
 </dialog>
 
 <script src="js/argus_reports.js"></script>
+<script>
+(function(){
+ const name=localStorage.getItem('argus_username')||'User';
+ const role=localStorage.getItem('argus_role')||'analyst';
+ const initials=name.trim().split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase()||'U';
+ document.getElementById('displayUsername').textContent=name;
+ document.getElementById('displayRole').textContent=role.toUpperCase();
+ document.getElementById('userInitials').textContent=initials;
+ document.getElementById('signOut').addEventListener('click',()=>{localStorage.removeItem('argus_token');localStorage.removeItem('argus_role');localStorage.removeItem('argus_username');});
+})();
+</script>
 </body>
 </html>

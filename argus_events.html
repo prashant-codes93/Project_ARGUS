@@ -9,27 +9,82 @@
 <link rel="stylesheet" href="css/argus_events.css">
 </head>
 <body>
-<aside>
-  <div class="logo">
-    <svg width="54" height="46" viewBox="0 0 54 46" fill="none" aria-hidden="true"><path d="M27 3 46 10v11c0 9-8 16-19 20C16 37 8 30 8 21V10z" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"/><path d="M13 22c4-6 9-9 14-9s10 3 14 9c-4 6-9 9-14 9s-10-3-14-9z" stroke="var(--ink)" stroke-width="2.5"/><circle cx="27" cy="22" r="5.5" fill="var(--acc)"/><path d="M40 3h6v6" stroke="var(--acc)" stroke-width="3"/></svg>
-    <b>ARGUS</b>
-  </div>
-  <nav aria-label="Main">
-    <div class="grp">SECURITY</div>
-    <a href="argus_dashboard.html" ><i>◉</i>Dashboard</a>
-    <a href="argus_events.html" class="on" aria-current="page"><i>▣</i>Events</a>
-    <a href="argus_alerts.html"><i>△</i>Alerts</a>
-    <a href="argus_threat_detection.html"><i>~</i>Threat Detection</a>
-    <a href="argus_investigations.html"><i>⌕</i>Investigations</a>
-    <a href="argus_risk_scoring.html"><i>◆</i>Risk Scoring</a>
-    <a href="argus_assets.html"><i>▤</i>Assets</a>
-    <a href="argus_reports.html"><i>▥</i>Reports</a>
-    <div class="grp">SYSTEM</div>
-    <a href="#"><i>✧</i>AI Assistant</a>
-    <a href="#"><i>⚙</i>Settings</a>
-  </nav>
-  <div class="me"><div class="av">RK</div><div>Rohan Kumar<small>ADMIN</small></div></div>
-</aside>
+<aside class="side">
+
+    <div class="side-brand">
+      <img src="icons/argus_logo.jpeg">
+    </div>
+
+    <div class="side-group">Security</div>
+
+    <nav class="side-nav" id="nav">
+
+      <a href="argus_dashboard.html" data-p="Dashboard">
+        <span class="ic">◉</span>Dashboard
+      </a>
+
+      <a href="argus_events.html" class="on" aria-current="page" data-p="Events">
+        <span class="ic">▣</span>Events
+      </a>
+
+      <a href="argus_alerts.html" data-p="Alerts">
+        <span class="ic">⚠</span>Alerts
+      </a>
+
+      <a href="argus_threat_detection.html" data-p="Threat Detection">
+        <span class="ic">⌁</span>Threat Detection
+      </a>
+
+      <a href="argus_investigations.html" data-p="Investigations">
+        <span class="ic">⌕</span>Investigations
+      </a>
+
+      <a href="argus_risk_scoring.html" data-p="Risk Scoring">
+        <span class="ic">◈</span>Risk Scoring
+      </a>
+
+      <a href="argus_assets.html" data-p="Assets">
+        <span class="ic">▤</span>Assets
+      </a>
+
+      <a href="argus_reports.html" data-p="Reports">
+        <span class="ic">▥</span>Reports
+      </a>
+
+    </nav>
+
+    <div class="side-group">System</div>
+
+    <nav class="side-nav">
+
+      <!-- <a href="#" data-p="AI Assistant">
+        <span class="ic">✧</span>AI Assistant
+      </a> -->
+
+      <a href="#" data-p="Settings">
+        <span class="ic">⚙</span>Settings
+      </a>
+
+    </nav>
+
+    <div class="side-foot">
+
+      <div class="who-mark" id="userInitials">U</div>
+
+      <div class="who">
+        <div id="displayUsername">User</div>
+        <div id="displayRole">USER</div>
+      </div>
+
+      <a class="side-signout mono"
+         id="signOut"
+         href="argus_login.html">
+        exit
+      </a>
+
+    </div>
+
+  </aside>
 
 <main>
   <header>
@@ -70,5 +125,16 @@
 <div id="dr" role="dialog" aria-label="Event details" aria-hidden="true"></div>
 
 <script src="js/argus_events.js"></script>
+<script>
+(function(){
+ const name=localStorage.getItem('argus_username')||'User';
+ const role=localStorage.getItem('argus_role')||'analyst';
+ const initials=name.trim().split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase()||'U';
+ document.getElementById('displayUsername').textContent=name;
+ document.getElementById('displayRole').textContent=role.toUpperCase();
+ document.getElementById('userInitials').textContent=initials;
+ document.getElementById('signOut').addEventListener('click',()=>{localStorage.removeItem('argus_token');localStorage.removeItem('argus_role');localStorage.removeItem('argus_username');});
+})();
+</script>
 </body>
 </html>

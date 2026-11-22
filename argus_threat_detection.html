@@ -1,81 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>ARGUS · Threat Detection</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/argus_threat_detection.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>ARGUS · Threat Detection</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/argus_threat_detection.css">
 </head>
-<body>
-<aside>
-  <div class="logo">
-    <svg width="54" height="46" viewBox="0 0 54 46" fill="none" aria-hidden="true"><path d="M27 3 46 10v11c0 9-8 16-19 20C16 37 8 30 8 21V10z" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"/><path d="M13 22c4-6 9-9 14-9s10 3 14 9c-4 6-9 9-14 9s-10-3-14-9z" stroke="var(--ink)" stroke-width="2.5"/><circle cx="27" cy="22" r="5.5" fill="var(--acc)"/><path d="M40 3h6v6" stroke="var(--acc)" stroke-width="3"/></svg>
-    <b>ARGUS</b>
-  </div>
-  <nav aria-label="Main">
-    <div class="grp">SECURITY</div>
-    <a href="argus_dashboard.html"><i>◉</i>Dashboard</a>
-    <a href="argus_events.html"><i>▣</i>Events</a>
-    <a href="argus_alerts.html"><i>△</i>Alerts</a>
-    <a href="argus_threat_detection.html" class="on" aria-current="page"><i>~</i>Threat Detection</a>
-    <a href="argus_investigations.html"><i>⌕</i>Investigations</a>
-    <a href="argus_risk_scoring.html"><i>◆</i>Risk Scoring</a>
-    <a href="argus_assets.html"><i>▤</i>Assets</a>
-    <a href="argus_reports.html"><i>▥</i>Reports</a>
-    <div class="grp">SYSTEM</div>
-    <a href="#"><i>✧</i>AI Assistant</a>
-    <a href="#"><i>⚙</i>Settings</a>
-  </nav>
-  <div class="me"><div class="av">RK</div><div>Rohan Kumar<small>ADMIN</small></div></div>
-</aside>
-
-<main>
-  <header>
-    <div><h1>Threat Detection</h1><p>Monitor detection engine activity, manage detection rules and identify suspicious security behaviour across your infrastructure.</p></div>
-    <div class="tools"><span id="eng" class="eng" role="status"></span></div>
-  </header>
-
-  <section class="stats" id="stats"></section>
-
-  <section class="panel box" aria-label="Detection engine overview">
-    <h2>Detection Engine Overview <small>Sample data · backend not connected</small></h2>
-    <div class="ov" id="overview"></div>
-    <ol class="flow" aria-label="Detection workflow">
-      <li><b>Security Events</b><span>Events enter via POST /api/events</span></li>
-      <li><b>Event Processing</b><span>normalize_event + threat intel</span></li>
-      <li><b>Detection Rules</b><span>run_detections() checks 3 rules</span></li>
-      <li><b>Threat Identification</b><span>Matching rules return a severity</span></li>
-      <li><b>Alerts Generated</b><span>Shown on the Alerts page</span></li>
-    </ol>
-  </section>
-
-  <h2 class="sec">Detection Rules <small>The 3 rules in detection.py. Toggles change this page only.</small></h2>
-  <section class="rules" id="rules"></section>
-
-  <h2 class="sec">Detection Activity</h2>
-  <section class="panel filters">
-    <input id="q" type="search" placeholder="Search rule, IP or event ID..." aria-label="Search detections">
-    <select id="fs" aria-label="Severity"><option value="">Severity: All</option><option value="critical">Critical</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select>
-    <select id="fr" aria-label="Rule"><option value="">Rule: All</option></select>
-    <select id="fres" aria-label="Result"><option value="">Result: All</option><option value="detected">Detected</option><option value="clear">No Threat</option></select>
-    <input id="fd" type="date" aria-label="Detection date">
-    <button id="clr">Clear</button>
-  </section>
-  <section class="panel">
-    <div class="scroll">
-      <table>
-        <thead><tr><th>Detection ID</th><th>Rule name</th><th>Event ID</th><th>Source IP</th><th>Username</th><th>Severity</th><th>Detection time</th><th>Result</th><th>Action</th></tr></thead>
-        <tbody id="rows"></tbody>
-      </table>
+<body class="responsive-section">
+  <aside class="side">
+    <div class="side-brand">
+      <img src="icons/argus_logo.jpeg" alt="ARGUS">
     </div>
-    <div id="none" class="empty" hidden>No detections match these filters. Clear the filters to see everything.</div>
-    <div class="foot"><span id="cnt"></span><span>Sample records</span></div>
-  </section>
-</main>
 
-<div id="dr" role="dialog" aria-label="Details" aria-hidden="true"></div>
-<script src="js/argus_threat_detection.js"></script>
+    <div class="side-group">Security</div>
+
+    <nav class="side-nav" id="nav">
+      <a href="argus_dashboard.html" data-p="Dashboard">
+        <span class="ic" aria-hidden="true">◉</span>Dashboard
+      </a>
+      <a href="argus_events.html" data-p="Events">
+        <span class="ic" aria-hidden="true">▣</span>Events
+      </a>
+      <a href="argus_alerts.html" data-p="Alerts">
+        <span class="ic" aria-hidden="true">⚠</span>Alerts
+      </a>
+      <a href="argus_threat_detection.html" class="on" aria-current="page" data-p="Threat Detection">
+        <span class="ic" aria-hidden="true">⌁</span>Threat Detection
+      </a>
+      <a href="argus_investigations.html" data-p="Investigations">
+        <span class="ic" aria-hidden="true">⌕</span>Investigations
+      </a>
+      <a href="argus_risk_scoring.html" data-p="Risk Scoring">
+        <span class="ic" aria-hidden="true">◈</span>Risk Scoring
+      </a>
+      <a href="argus_assets.html" data-p="Assets">
+        <span class="ic" aria-hidden="true">▤</span>Assets
+      </a>
+      <a href="argus_reports.html" data-p="Reports">
+        <span class="ic" aria-hidden="true">▥</span>Reports
+      </a>
+    </nav>
+
+    <div class="side-group">System</div>
+
+    <nav class="side-nav">
+      <a href="#" data-p="Settings">
+        <span class="ic" aria-hidden="true">⚙</span>Settings
+      </a>
+    </nav>
+
+    <div class="side-foot">
+      <div class="who-mark" id="userInitials">U</div>
+      <div class="who">
+        <div id="displayUsername">User</div>
+        <div id="displayRole">USER</div>
+      </div>
+      <a class="side-signout mono" id="signOut" href="argus_login.html">exit</a>
+    </div>
+  </aside>
+
+  <main>
+    <header>
+      <div>
+        <h1>Threat Detection</h1>
+        <p>Review recent detection rule matches and inspect the events that triggered them.</p>
+      </div>
+      <div class="tools">
+        <span id="eng" class="eng" role="status"></span>
+      </div>
+    </header>
+
+    <h2 class="sec">Detection Activity</h2>
+
+    <section class="panel filters" aria-label="Detection filters">
+      <input id="q" type="search" placeholder="Search rule, IP or event ID..." aria-label="Search detections">
+
+      <select id="fs" aria-label="Severity">
+        <option value="">Severity: All</option>
+        <option value="critical">Critical</option>
+        <option value="high">High</option>
+        <option value="medium">Medium</option>
+        <option value="low">Low</option>
+      </select>
+
+      <select id="fr" aria-label="Rule">
+        <option value="">Rule: All</option>
+      </select>
+
+      <select id="fres" aria-label="Result">
+        <option value="">Result: All</option>
+        <option value="detected">Detected</option>
+      </select>
+
+      <input id="fd" type="date" aria-label="Detection date">
+      <button id="clr" type="button">Clear</button>
+    </section>
+
+    <section class="panel" aria-label="Detection results">
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Detection ID</th>
+              <th scope="col">Rule name</th>
+              <th scope="col">Event ID</th>
+              <th scope="col">Source IP</th>
+              <th scope="col">Username</th>
+              <th scope="col">Severity</th>
+              <th scope="col">Detection time</th>
+              <th scope="col">Result</th>
+              <th scope="col">Action</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+
+      <div id="none" class="empty" role="status" hidden></div>
+
+      <div class="foot">
+        <span id="cnt"></span>
+      </div>
+    </section>
+  </main>
+
+  <div id="dr" role="dialog" aria-label="Detection details" aria-hidden="true"></div>
+
+  <script src="js/argus_threat_detection.js"></script>
+  <script>
+    (function () {
+      const name = localStorage.getItem("argus_username") || "User";
+      const role = localStorage.getItem("argus_role") || "analyst";
+      const initials = name.trim().split(/\s+/)
+        .map(word => word.charAt(0))
+        .join("")
+        .slice(0, 2)
+        .toUpperCase() || "U";
+
+      document.getElementById("displayUsername").textContent = name;
+      document.getElementById("displayRole").textContent = role.toUpperCase();
+      document.getElementById("userInitials").textContent = initials;
+
+      document.getElementById("signOut").addEventListener("click", () => {
+        localStorage.removeItem("argus_token");
+        localStorage.removeItem("argus_role");
+        localStorage.removeItem("argus_username");
+      });
+    })();
+  </script>
 </body>
 </html>
