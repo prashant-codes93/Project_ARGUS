@@ -24,6 +24,10 @@ import json
 import sys
 from pathlib import Path
 from datetime import datetime, timezone
+from backend.otp_registration import install_otp_routes
+from backend.investigations import register_investigations
+from backend.assets import register_assets
+from backend.reports import register_reports
 
 # =========================================================
 # PROJECT ROOT
@@ -121,6 +125,12 @@ def get_current_user_id():
         return None
 
 
+install_otp_routes(app, db)
+register_investigations(app, db, get_current_user_id)
+register_assets(app, db, get_current_user_id)
+register_reports(app, db, get_current_user_id)
+
+
 # =========================================================
 # HEALTH CHECK
 # =========================================================
@@ -139,100 +149,9 @@ def health():
 # USER REGISTRATION
 # =========================================================
 
-@app.route("/api/auth/register", methods=["POST"])
-def register():
-    """
-    Public registration.
-
-    Every newly registered account is an analyst.
-
-    There is no admin hierarchy in Argus.
-    """
-
-    body = request.get_json(
-        force=True,
-        silent=True
-    ) or {}
-
-    username = body.get("username")
-    password = body.get("password")
-
-    # -----------------------------------------------------
-    # Validate input
-    # -----------------------------------------------------
-
-    if not username or not password:
-        return jsonify({
-            "error": "username and password are required"
-        }), 400
-
-    username = str(username).strip()
-
-    if len(username) < 3:
-        return jsonify({
-            "error": "username must be at least 3 characters"
-        }), 400
-
-    if len(password) < 6:
-        return jsonify({
-            "error": "password must be at least 6 characters"
-        }), 400
-
-    # -----------------------------------------------------
-    # Create user
-    # -----------------------------------------------------
-
-    with db.session() as conn:
-
-        existing = conn.execute(
-            """
-            SELECT id
-            FROM users
-            WHERE username = ?
-            """,
-            (username,)
-        ).fetchone()
-
-        if existing:
-            return jsonify({
-                "error": "username already taken"
-            }), 409
-
-        # Every normal registered user is an analyst.
-        role = "analyst"
-
-        cursor = conn.execute(
-            """
-            INSERT INTO users
-            (
-                username,
-                password_hash,
-                role,
-                created_at
-            )
-            VALUES (?, ?, ?, ?)
-            """,
-            (
-                username,
-                hash_password(password),
-                role,
-                datetime.now(timezone.utc).isoformat(),
-            ),
-        )
-
-        user_id = cursor.lastrowid
-
-    return jsonify({
-        "message": "registration successful",
-        "user": {
-            "id": user_id,
-            "username": username,
-            "role": role,
-        },
-    }), 201
+# Registration is handled by OTP module.
 
 
-# =========================================================
 # LOGIN
 # =========================================================
 

@@ -68,6 +68,15 @@ CREATE TABLE IF NOT EXISTS scan_sessions (
     total_events INTEGER NOT NULL DEFAULT 0,
     threats_found INTEGER NOT NULL DEFAULT 0
 );
+
+CREATE TABLE IF NOT EXISTS detection_matches (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_id INTEGER NOT NULL,
+    rule TEXT NOT NULL,
+    severity TEXT NOT NULL,
+    detected_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (event_id) REFERENCES events(id)
+);
 """
 
 

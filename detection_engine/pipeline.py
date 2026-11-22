@@ -115,6 +115,18 @@ def run_pipeline(
             ioc_match,
         )
 
+        # Save each rule match for the Threat Detection page.
+        conn.executemany(
+            """
+            INSERT INTO detection_matches (event_id, rule, severity)
+            VALUES (?, ?, ?)
+            """,
+            [
+                (event_id, match["rule"], match["severity"])
+                for match in triggered_rules
+            ],
+        )
+
 
         # -----------------------------------------------------
         # Update scan threat count
